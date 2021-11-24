@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox
 from tkcalendar import *
 import mysql.connector as mariadb
 import datetime
-import traceback
 
 
 # Membuat database dan table jika belum ada
@@ -27,6 +26,9 @@ def createTable():
         qty INT(4),
         harga INT(9),
         kategori VARCHAR(255) NOT NULL,
+        dibuat datetime null,
+        diubah datetime null,
+        status_data VARCHAR(255) null,
         PRIMARY KEY (id),
         UNIQUE KEY (prefix, id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
@@ -138,14 +140,16 @@ def validasiSemua():
 
 # Mengelola data
 def tambahData():
+    hari_ini = datetime.datetime.now()
+    
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     validasiSemua()
     if valid == True:
         try:
-            c.execute("INSERT INTO tb_inventory (prefix,nama,qty,harga,kategori) VALUES (%s, %s, %s, %s, %s)",
-            (prefix,nama,qty,harga,kategori))
+            c.execute("INSERT INTO tb_inventory (prefix,nama,qty,harga,kategori,dibuat,status_data) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (prefix,nama,qty,harga,kategori,hari_ini,'Aktif'))
             conn.commit()
 
             messagebox.showinfo("information", "Barang berhasil ditambah !")
@@ -163,6 +167,8 @@ def tambahData():
             conn.close()
 
 def editData():
+    hari_ini = datetime.datetime.now()
+    
     nama = txt_nama.get()
     qty = int(txt_qty.get())
     harga = int(txt_harga.get())
@@ -173,7 +179,8 @@ def editData():
     validasiSemua()
     if valid == True:
         try:
-            c.execute("UPDATE tb_inventory SET prefix=%s,nama=%s,qty=%s,harga=%s,kategori=%s WHERE id=%s", (prefix,nama,qty,harga,kategori,id_barang))
+            c.execute("UPDATE tb_inventory SET prefix=%s,nama=%s,qty=%s,harga=%s,kategori=%s,diubah=%s WHERE id=%s",
+            (prefix,nama,qty,harga,kategori,hari_ini,id_barang))
             conn.commit()
 
             messagebox.showinfo("information", "Barang berhasil diedit !")
@@ -193,15 +200,14 @@ def editData():
             conn.close()
 
 def hapusData():
-    nama = txt_nama.get()
-    qty = int(txt_qty.get())
-    harga = int(txt_harga.get())
+    hari_ini = datetime.datetime.now()
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     try:
-        c.execute("DELETE FROM tb_inventory WHERE id=%s", (id_barang,))
+        c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
+        (hari_ini,"Tidak Aktif", id_barang))
         conn.commit()
 
         messagebox.showinfo("information", "Barang berhasil dihapus !")
@@ -218,6 +224,45 @@ def hapusData():
        messagebox.showinfo("information", e)
        conn.rollback()
        conn.close()
+
+def restoreData():
+    hari_ini = datetime.datetime.now()
+
+    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    c = conn.cursor()
+    
+    try:
+        c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
+        (hari_ini, "Aktif", id_barang))
+        conn.commit()
+
+        messagebox.showinfo("information", "Barang Berhasil Diambil Dari Gudang")
+        showInventory()
+    except Exception as e:
+       messagebox.showinfo("information", e)
+       conn.rollback()
+       conn.close()
+    
+
+# Mencari data ditabel berdarskan text
+def callback(sv):
+    global cari, kategori
+
+    if cmb_pilih_kategori.get() == lst_pilih_kategori[0]:
+        frm_tabel.destroy()
+        kategori = ''
+        showCari()
+    elif cmb_pilih_kategori.get() == lst_pilih_kategori[1]:
+        frm_tabel.destroy()
+        kategori = lst_pilih_kategori[1]
+        showCari()
+    elif cmb_pilih_kategori.get() == lst_pilih_kategori[2]:
+        frm_tabel.destroy()
+        kategori = lst_pilih_kategori[2]
+        showCari()
+
+    cari = txt_cari.get()
+    showCari()
 
 
 # Klick event pada tabel
@@ -250,40 +295,66 @@ def GetValue(event):
     txt_harga.delete(0, END)
     txt_harga.insert(0, harga)
 
+def GetValueRecycleBin(event):
+    global id_barang, harga
+
+    txt_nama.delete(0, END)
+    txt_qty.delete(0, END)
+    txt_harga.delete(0, END)
+    rowID = listBoxRecycle.selection()[0]
+    select = listBoxRecycle.set(rowID)
+
+    id_barang_temp = ''.join(select['ID Barang'])
+    id_barang = int(id_barang_temp[4:])
+
+    txt_nama.insert(0,select['Nama'])
+    txt_qty.insert(0,select['Qty'])
+    txt_harga.insert(0,select['Harga'])
+    
+    kategori_temp = ''.join(select['ID Barang'])
+    kategori_id = str(kategori_temp[:3])
+    if kategori_id == "ATK":
+        kategori = lst_kategori[0]
+    elif kategori_id == "ELC":
+        kategori = lst_kategori[1]
+    cmb_kategori.set(kategori)
+
+    harga_temp = txt_harga.get()
+    harga = str(harga_temp.replace(",","")[3:][:-3])
+    txt_harga.delete(0, END)
+    txt_harga.insert(0, harga)
+
+    print(id_barang, kategori_id)
+
 
 # Memilih kategori barang berdasarkan cmb
 def kategoriShowBarang(e):
     global kategori
 
     if cmb_pilih_kategori.get() == lst_pilih_kategori[0]:
-        frame_tabel.destroy()
-        showInventory()
+        frm_tabel.destroy()
+        kategori = ''
+        showCari()
     elif cmb_pilih_kategori.get() == lst_pilih_kategori[1]:
-        frame_tabel.destroy()
+        frm_tabel.destroy()
         kategori = lst_pilih_kategori[1]
-        showKategori()
+        showCari()
     elif cmb_pilih_kategori.get() == lst_pilih_kategori[2]:
-        frame_tabel.destroy()
+        frm_tabel.destroy()
         kategori = lst_pilih_kategori[2]
-        showKategori()
+        showCari()
 
 
-# Fungsi untuk menutup program
-def closeProgram():
-    root.destroy()
-    top.destroy()
-
-
-# Tabel menunjukkan tabel dari database
+# Menunjukkan tabel dari database
 def showInventory():
-    global listBox, scrollTree, frame_tabel
+    global listBox, scrollTree, frm_tabel
 
-    frame_tabel = Frame(root)
-    frame_tabel.place(x=20,y=170)
-    scrollTree = ttk.Scrollbar(frame_tabel, orient='vertical')
+    frm_tabel = Frame(root)
+    frm_tabel.place(x=20,y=220)
+    scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('ID Barang','Nama','Qty','Harga')
-    listBox = ttk.Treeview(frame_tabel, columns=cols, show='headings', yscrollcommand=scrollTree.set)
+    listBox = ttk.Treeview(frm_tabel, style="listBox.Treeview", columns=cols, show='headings', yscrollcommand=scrollTree.set)
     listBox.pack(side=LEFT)
 
     scrollTree.config(command=listBox.yview)
@@ -292,31 +363,33 @@ def showInventory():
     for col in cols:
         listBox.heading(col, text=col)
         listBox.column('ID Barang', minwidth=0, width=80, stretch=NO, anchor = CENTER)
-        listBox.column('Nama', minwidth=0, width=150, stretch=NO, anchor = W)
-        listBox.column('Qty', minwidth=0, width=80, stretch=NO, anchor = CENTER)
+        listBox.column('Nama', minwidth=0, width=170, stretch=NO, anchor = W)
+        listBox.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
-    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory")
+    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Aktif",))
     record = c.fetchall()
     conn.commit()
+    
     for i, (id_barang,nama,qty,harga) in enumerate(record, start=1):
-        listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)))
+        listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
         conn.close()
 
     listBox.bind('<Double-Button-1>',GetValue)
 
-def showKategori():
-    global listBox, scrollTree, frame_tabel
+def showCari():
+    global cari
+    cari = txt_cari.get()
 
-    frame_tabel = Frame(root)
-    frame_tabel.place(x=20,y=170)
-    scrollTree = ttk.Scrollbar(frame_tabel, orient='vertical')
+    frm_tabel = Frame(root)
+    frm_tabel.place(x=20,y=220)
+    scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('ID Barang','Nama','Qty','Harga')
-    listBox = ttk.Treeview(frame_tabel, columns=cols, show='headings', yscrollcommand=scrollTree.set)
+    listBox = ttk.Treeview(frm_tabel, style="listBox.Treeview", columns=cols, show='headings', yscrollcommand=scrollTree.set)
     listBox.pack(side=LEFT)
 
     scrollTree.config(command=listBox.yview)
@@ -325,106 +398,132 @@ def showKategori():
     for col in cols:
         listBox.heading(col, text=col)
         listBox.column('ID Barang', minwidth=0, width=80, stretch=NO, anchor = CENTER)
-        listBox.column('Nama', minwidth=0, width=150, stretch=NO, anchor = W)
-        listBox.column('Qty', minwidth=0, width=80, stretch=NO, anchor = CENTER)
+        listBox.column('Nama', minwidth=0, width=170, stretch=NO, anchor = W)
+        listBox.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
-    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE kategori = '" + kategori + "'")
+    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE kategori LIKE %s AND nama LIKE %s AND status_data=%s", ("%"+kategori+"%","%"+cari+"%","Aktif"))
     record = c.fetchall()
     conn.commit()
+    
     for i, (id_barang,nama,qty,harga) in enumerate(record, start=1):
         listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)))
         conn.close()
 
     listBox.bind('<Double-Button-1>',GetValue)
 
+def showRecycleBin():
+    global listBoxRecycle, scrollTree, frm_recycle
+
+    frm_recycle = Frame(top)
+    frm_recycle.place(x=20,y=80)
+    scrollTree = ttk.Scrollbar(frm_recycle, orient='vertical')
+    
+    cols = ('ID Barang','Nama','Qty','Harga')
+    listBoxRecycle = ttk.Treeview(frm_recycle, style="listBox.Treeview",  columns=cols, show='headings', yscrollcommand=scrollTree.set)
+    listBoxRecycle.pack(side=LEFT)
+
+    scrollTree.config(command=listBoxRecycle.yview)
+    scrollTree.pack(side=RIGHT, fill=Y)
+
+    for col in cols:
+        listBoxRecycle.heading(col, text=col)
+        listBoxRecycle.column('ID Barang', minwidth=0, width=80, stretch=NO, anchor = CENTER)
+        listBoxRecycle.column('Nama', minwidth=0, width=170, stretch=NO, anchor = W)
+        listBoxRecycle.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
+        listBoxRecycle.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
+
+    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    c = conn.cursor()
+
+    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Tidak Aktif",))
+    record = c.fetchall()
+    conn.commit()
+    
+    for i, (id_barang,nama,qty,harga) in enumerate(record, start=1):
+        listBoxRecycle.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
+        conn.close()
+
+    listBoxRecycle.bind('<Double-Button-1>', GetValueRecycleBin)
+    showInventory()
 
 
 # Window
 def windowUtama():
-    global root, svqty
-    global txt_nama, txt_qty, txt_harga, cmb_kategori, cmb_pilih_kategori
-    global btn_tambah, btn_edit, btn_hapus
+    global root, sv, kategori
+    global txt_nama, txt_qty, txt_harga, cmb_kategori, txt_cari, cmb_pilih_kategori
+    global btn_tambah, btn_edit, btn_hapus, btn_recycle_bin
     global lst_kategori, lst_pilih_kategori
 
     root = Tk()
-    svqty = StringVar()
+    sv = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("500x420")
+    root.geometry("500x470")
     root.resizable(False, False)
-    root.protocol('WM_DELETE_WINDOW', closeProgram)
+    root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy(), top.destroy()])
 
     theme = ttk.Style()
     theme.theme_use('clam')
-
-    jam_sekarang = datetime.datetime.now().hour
-    hari_ini = datetime.datetime.now()
+    theme.configure("listBox.Treeview.Heading", font=('Lucida Sans', 10, 'bold'), foreground="#FFFFFF", background="#009DFF", borderwidth=0)
+    theme.configure("listBox.Treeview", fieldbackground="#D0D0D0")
 
     lst_kategori = ['Alat Tulis Kantor', 'Elektronik']
     lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
 
-    lbl_nama = Label(root, font=("Arial", 13), text="Nama").place(x=20,y=30)
-    lbl_qty = Label(root, font=("Arial", 13), text="Qty").place(x=20,y=60)
-    lbl_harga = Label(root, font=("Arial", 13), text="Harga").place(x=20,y=90)
-    lbl_pilih_kategori = Label(root, font=("Arial", 10), text="Kategori :").place(x=280,y=149)
-
-    txt_nama = Entry(root,width=15, font=("Arial", 10))
+    lbl_nama = Label(root, font=("Lucida Sans", 13), text="Nama").place(x=20,y=30)
+    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=20,y=60)
+    lbl_harga = Label(root, font=("Lucida Sans", 13), text="Harga").place(x=20,y=90)
+    lbl_cari = Label(root, font=("Lucida Sans", 10), text="Cari :").place(x=20,y=190)
+    lbl_pilih_kategori = Label(root, font=("Lucida Sans", 10), text="Kategori :").place(x=277,y=189)
+    
+    txt_nama = Entry(root,width=15, font=("Lucida Sans", 10))
     txt_nama.place(x=90,y=32)
 
-    txt_qty = Entry(root, width=15, font=("Arial", 10))
+    txt_qty = Entry(root, width=15, font=("Lucida Sans", 10))
     txt_qty.place(x=90,y=62)
 
-    txt_harga = Entry(root,width=15, font=("Arial", 10))
+    txt_harga = Entry(root,width=15, font=("Lucida Sans", 10))
     txt_harga.place(x=90,y=92)
 
-    cmb_kategori = ttk.Combobox(root, state="readonly", value=lst_kategori, width=17)
+    cmb_kategori = ttk.Combobox(root, state="readonly", font=("Lucida Sans",10), value=lst_kategori, width=14)
     cmb_kategori.set("Pilih Kategori")
     cmb_kategori.place(x=90,y=120)
 
-    cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=17)
+    sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
+    txt_cari = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
+    txt_cari.place(x=60,y=192)
+
+    cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
-    cmb_pilih_kategori.place(x=340,y=150)
+    cmb_pilih_kategori.place(x=343,y=190)
 
-    btn_tambah = Button(root, text="Tambah", width=15, command=lambda: [tambahData()]).place(x=290,y=30)
-    btn_edit = Button(root, text="Edit", width=15, command=lambda: [editData()]).place(x=290,y=60)
-    btn_hapus = Button(root, text="Hapus", width=15, command=lambda: [hapusData()]).place(x=290,y=90) 
-
-    # cmb_kelas = ttk.Combobox(root, state="readonly", value=lst_kelas)
-    # cmb_kelas.bind("<<ComboboxSelected>>", kelasPenerbangan)
-    # cmb_kelas.set("Pilih Kelas")
-    # cmb_kelas.place(x=210,y=130)
-
-    # cal_tgl_berangkat = DateEntry(root, selectmode='day', date_pattern='dd-mm-yyyy', mindate=skrgLgkp)
-    # cal_tgl_berangkat.delete(0, END)
-    # cal_tgl_berangkat.configure(state="readonly")
-    # cal_tgl_berangkat.bind("<<DateEntrySelected>>", jamSamaHari)
-    # cal_tgl_berangkat.place(x=210,y=160)
-
-    # cmb_jam_berangkat = ttk.Combobox(root, state="readonly", width=8)
-    # cmb_jam_berangkat.configure(state='disabled')
-    # cmb_jam_berangkat.place(x=210,y=190)
-
-    # txt_jam_datang = Entry(root, width=7)
-    # txt_jam_datang.place(x=210,y=220)
-    # txt_jam_datang.configure(state='disabled',disabledbackground='white', disabledforeground='black')
-
-    # txt_jml_dewasa = Entry(root,width=4)
-    # txt_jml_dewasa.place(x=210,y=250)
-
-    # txt_jml_anak = Entry(root,width=4)
-    # txt_jml_anak.place(x=210,y=280)
-
-    # btn_beli_tiket = Button(root, text="Pesan Tiket", command=lambda: [pesanTiket()]).place(x=110,y=330)
-    # btn_lihat_riwayat = Button(root, text="Lihat Tabel", command=lambda: [windowTabel(), root.withdraw()]).place(x=200,y=330)
-    # btn_selesai = Button(root, text="Selesai", command=lambda: [root.destroy(), top.destroy()]).place(x=160,y=360)
-
+    btn_tambah = Button(root, text="Tambah", width=15, font=("Lucida Sans",10), command=lambda: [tambahData()]).place(x=290,y=30)
+    btn_edit = Button(root, text="Edit", width=15, font=("Lucida Sans",10), command=lambda: [editData()]).place(x=290,y=60)
+    btn_hapus = Button(root, text="Hapus", width=15, font=("Lucida Sans",10), command=lambda: [hapusData()]).place(x=290,y=90)
+    btn_recycle_bin = Button(root, text="🗑️Recycle Bin", font=("Lucida Sans",10), width=15, command=lambda: [windowRecycleBin(), root.withdraw()]).place(x=290,y=120)
 
     showInventory()
     mainloop()
+
+def windowRecycleBin():
+    global top
+    global btn_restore
+
+    top = Toplevel()
+    top.title("Recycle Bin")
+    top.geometry("500x340")
+    top.resizable(False, False)
+    top.protocol('WM_DELETE_WINDOW', lambda: [root.deiconify(), top.withdraw()])
+
+    lbl_nama = Label(top, font=("Lucida Sans", 16), text="Pilih data untuk direstore").place(x=20,y=10)
+
+    btn_restore = Button(top, text="Restore",font=("Lucida Sans",10), command=lambda: [restoreData(), listBoxRecycle.destroy(), showRecycleBin()]).place(x=20,y=45)
+
+    showRecycleBin()
 
 
 createDatabase()
