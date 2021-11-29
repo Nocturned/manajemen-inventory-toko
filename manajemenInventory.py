@@ -378,7 +378,7 @@ def showInventory():
         listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
         conn.close()
 
-    listBox.bind('<Single-Button-1>',GetValue)
+    listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showCari():
     global cari
@@ -413,7 +413,7 @@ def showCari():
         listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)))
         conn.close()
 
-    listBox.bind('<Single-Button-1>',GetValue)
+    listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showRecycleBin():
     global listBoxRecycle, scrollTree, frm_recycle
@@ -447,7 +447,7 @@ def showRecycleBin():
         listBoxRecycle.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
         conn.close()
 
-    listBoxRecycle.bind('<Single-Button-1>', GetValueRecycleBin)
+    listBoxRecycle.bind('<ButtonRelease-1>', GetValueRecycleBin)
     showInventory()
 
 
