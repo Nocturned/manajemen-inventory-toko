@@ -83,7 +83,7 @@ def callbackqty(svqty):
     txt_total.configure(state='disabled',disabledbackground='white', disabledforeground='black')
 
 
-# Mengambil nilai dari double-klick katalog
+# Mengambil nilai dari lepas klick pada tabel katalog
 def GetValue(event):
     global id_barang, nama, harga_str
 
@@ -93,6 +93,20 @@ def GetValue(event):
     id_barang = select['No']
     nama = select['Nama']
     harga_str = select['Harga']
+
+    global total, qty
+
+    qty = int(txt_qty.get())
+    harga_temp = str(harga_str.replace(",","")[3:][:-3])
+    harga = int(harga_temp)
+    total = int(qty * harga)
+
+    total_str = "Rp {:,},00-".format(total)
+
+    txt_total.configure(state='normal')
+    txt_total.delete(0, END)
+    txt_total.insert('end', '{}'.format(total_str))
+    txt_total.configure(state='disabled',disabledbackground='white', disabledforeground='black')
 
 
 # Validasi text Qty
@@ -186,7 +200,7 @@ def showKatalog():
         listBox.insert("", "end", values=(id,nama,"Rp {:,},00-".format(harga)))
         conn.close()
 
-    listBox.bind('<Double-Button-1>',GetValue)
+    listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showKatalogKategori():
     global cari
@@ -220,7 +234,10 @@ def showKatalogKategori():
         listBox.insert("", "end", values=(id,nama,"Rp {:,},00-".format(harga)))
         conn.close()
 
-    listBox.bind('<Double-Button-1>',GetValue)
+    listBox.bind('<ButtonRelease-1>',GetValue)
+
+def showKeranjang():
+    pass
 
 
 # Window GUI program
@@ -234,7 +251,7 @@ def windowUtama():
     sv = StringVar()
     svqty = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("410x470")
+    root.geometry("800x470")
     root.resizable(False, False)
     root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy()])
 
@@ -267,6 +284,7 @@ def windowUtama():
     txt_total = Entry(root, width=15, font=("Lucida Sans", 10), state='disabled', disabledbackground='white', disabledforeground='black')
     txt_total.place(x=220,y=383)
 
+    
     btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=165,y=430)
 
     showKatalog()
