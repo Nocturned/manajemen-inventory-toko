@@ -23,8 +23,8 @@ def createTable():
         prefix VARCHAR(4) NOT NULL DEFAULT 'ITM-',
         id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
         nama VARCHAR(255) NOT NULL,
-        qty INT(4),
-        harga INT(9),
+        qty INT(4) UNSIGNED,
+        harga INT(9) UNSIGNED,
         kategori VARCHAR(255) NOT NULL,
         dibuat datetime null,
         diubah datetime null,
@@ -167,6 +167,8 @@ def tambahData():
             conn.close()
 
 def editData():
+    global id_barang
+
     hari_ini = datetime.datetime.now()
     
     nama = txt_nama.get()
@@ -190,16 +192,19 @@ def editData():
             txt_harga.delete(0, END)
             cmb_kategori.set("Pilih Kategori")
             txt_nama.focus_set()
+            id_barang = 0
 
             listBox.destroy()
             showInventory()
 
         except Exception as e:
-            messagebox.showinfo("information", e)
+            messagebox.showinfo("information", 'Harap pilih barang untuk diedit terlebih dahulu !')
             conn.rollback()
             conn.close()
 
 def hapusData():
+    global id_barang
+
     hari_ini = datetime.datetime.now()
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
@@ -217,6 +222,7 @@ def hapusData():
         txt_harga.delete(0, END)
         cmb_kategori.set("Pilih Kategori")
         txt_nama.focus_set()
+        id_barang = 0
 
         listBox.destroy()
         showInventory()
@@ -226,6 +232,8 @@ def hapusData():
        conn.close()
 
 def restoreData():
+    global id_barang
+
     hari_ini = datetime.datetime.now()
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
@@ -235,6 +243,8 @@ def restoreData():
         c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
         (hari_ini, "Aktif", id_barang))
         conn.commit()
+
+        id_barang = 0
 
         messagebox.showinfo("information", "Barang Berhasil Diambil Dari Gudang")
         showInventory()
