@@ -244,7 +244,7 @@ def restoreData():
        conn.close()
     
 
-# Mencari data ditabel berdarskan text
+# Mencari data ditabel berdasarkan nama dan atau kategori
 def callback(sv):
     global cari, kategori
 
@@ -265,7 +265,7 @@ def callback(sv):
     showCari()
 
 
-# Klick event pada tabel
+# Mengambil nilai dari tabel berdasarkan klick
 def GetValue(event):
     global id_barang, harga
 
@@ -327,7 +327,7 @@ def GetValueRecycleBin(event):
     print(id_barang, kategori_id)
 
 
-# Memilih kategori barang berdasarkan cmb
+# Menunjukkan tabel dari database berdasarkan kategori
 def kategoriShowBarang(e):
     global kategori
 
@@ -378,7 +378,7 @@ def showInventory():
         listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
         conn.close()
 
-    listBox.bind('<Double-Button-1>',GetValue)
+    listBox.bind('<Single-Button-1>',GetValue)
 
 def showCari():
     global cari
@@ -413,7 +413,7 @@ def showCari():
         listBox.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)))
         conn.close()
 
-    listBox.bind('<Double-Button-1>',GetValue)
+    listBox.bind('<Single-Button-1>',GetValue)
 
 def showRecycleBin():
     global listBoxRecycle, scrollTree, frm_recycle
@@ -447,11 +447,11 @@ def showRecycleBin():
         listBoxRecycle.insert("", "end", values=(id_barang,nama,qty,"Rp {:,},00-".format(harga)), tags=('ganjil',))
         conn.close()
 
-    listBoxRecycle.bind('<Double-Button-1>', GetValueRecycleBin)
+    listBoxRecycle.bind('<Single-Button-1>', GetValueRecycleBin)
     showInventory()
 
 
-# Window
+# Window GUI program
 def windowUtama():
     global root, sv, kategori
     global txt_nama, txt_qty, txt_harga, cmb_kategori, txt_cari, cmb_pilih_kategori
