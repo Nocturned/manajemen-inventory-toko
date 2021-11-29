@@ -13,8 +13,8 @@ def createTable():
     c.execute("""CREATE TABLE IF NOT EXISTS tb_riwayat_pembelian (
         id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
         barang VARCHAR(255) NOT NULL,
-        qty INT(4),
-        total INT(9),
+        qty INT(4) UNSIGNED,
+        total INT(9) UNSIGNED,
         dibuat datetime null,
         diubah datetime null,
         status_data VARCHAR(255) null,
@@ -163,7 +163,7 @@ def beliBarang():
             showKatalog()
 
         except Exception as e:
-            messagebox.showinfo("information", e)
+            messagebox.showinfo("information", 'Stock barang ini sedang habis')
             conn.rollback()
             conn.close()
 
@@ -236,8 +236,6 @@ def showKatalogKategori():
 
     listBox.bind('<ButtonRelease-1>',GetValue)
 
-def showKeranjang():
-    pass
 
 
 # Window GUI program
@@ -251,7 +249,7 @@ def windowUtama():
     sv = StringVar()
     svqty = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("800x470")
+    root.geometry("410x470")
     root.resizable(False, False)
     root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy()])
 
@@ -284,7 +282,7 @@ def windowUtama():
     txt_total = Entry(root, width=15, font=("Lucida Sans", 10), state='disabled', disabledbackground='white', disabledforeground='black')
     txt_total.place(x=220,y=383)
 
-    
+
     btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=165,y=430)
 
     showKatalog()
