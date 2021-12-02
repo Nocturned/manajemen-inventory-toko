@@ -256,7 +256,31 @@ def restoreData():
 
 # Mencari data ditabel berdasarkan nama dan atau kategori
 def callback(sv):
-    global cari, kategori
+    global Id, cari, kategori
+
+    cari = txt_cari_nama.get()
+    Id = txt_cari_id.get()
+    
+    if cmb_pilih_kategori.get() == lst_pilih_kategori[0]:
+        frm_tabel.destroy()
+        kategori = ''
+        showCari()
+    elif cmb_pilih_kategori.get() == lst_pilih_kategori[1]:
+        frm_tabel.destroy()
+        kategori = lst_pilih_kategori[1]
+        showCari()
+    elif cmb_pilih_kategori.get() == lst_pilih_kategori[2]:
+        frm_tabel.destroy()
+        kategori = lst_pilih_kategori[2]
+        showCari()
+
+    showCari()
+
+def callbackId(svid):
+    global Id, cari, kategori
+
+    cari = txt_cari_nama.get()
+    Id_search = txt_cari_id.get()
 
     if cmb_pilih_kategori.get() == lst_pilih_kategori[0]:
         frm_tabel.destroy()
@@ -271,9 +295,7 @@ def callback(sv):
         kategori = lst_pilih_kategori[2]
         showCari()
 
-    cari = txt_cari.get()
     showCari()
-
 
 # Mengambil nilai dari tabel berdasarkan klick
 def GetValue(event):
@@ -382,6 +404,7 @@ def showInventory():
 
     c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Aktif",))
     record = c.fetchall()
+    print(record)
     conn.commit()
     
     for i, (id_barang,nama,qty,harga) in enumerate(record, start=1):
@@ -391,8 +414,9 @@ def showInventory():
     listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showCari():
-    global cari
-    cari = txt_cari.get()
+    global cari, Id
+    Id = txt_cari_id.get()
+    cari = txt_cari_nama.get()
 
     frm_tabel = Frame(root)
     frm_tabel.place(x=20,y=220)
@@ -415,7 +439,7 @@ def showCari():
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
-    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE kategori LIKE %s AND nama LIKE %s AND status_data=%s", ("%"+kategori+"%","%"+cari+"%","Aktif"))
+    c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE id LIKE %s AND kategori LIKE %s AND nama LIKE %s AND status_data=%s", ("%"+Id+"%","%"+kategori+"%","%"+cari+"%","Aktif"))
     record = c.fetchall()
     conn.commit()
     
@@ -464,12 +488,13 @@ def showRecycleBin():
 # Window GUI program
 def windowUtama():
     global root, sv, kategori
-    global txt_nama, txt_qty, txt_harga, cmb_kategori, txt_cari, cmb_pilih_kategori
+    global txt_nama, txt_qty, txt_harga, cmb_kategori, txt_cari_nama, txt_cari_id, cmb_pilih_kategori
     global btn_tambah, btn_edit, btn_hapus, btn_recycle_bin
     global lst_kategori, lst_pilih_kategori
 
     root = Tk()
     sv = StringVar()
+    svid = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
     root.geometry("500x470")
     root.resizable(False, False)
@@ -486,7 +511,8 @@ def windowUtama():
     lbl_nama = Label(root, font=("Lucida Sans", 13), text="Nama").place(x=20,y=30)
     lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=20,y=60)
     lbl_harga = Label(root, font=("Lucida Sans", 13), text="Harga").place(x=20,y=90)
-    lbl_cari = Label(root, font=("Lucida Sans", 10), text="Cari :").place(x=20,y=190)
+    lbl_cari_id = Label(root, font=("Lucida Sans", 10), text="ID :").place(x=20,y=190)
+    lbl_cari_nama = Label(root, font=("Lucida Sans", 10), text="Nama :").place(x=97,y=190)
     lbl_pilih_kategori = Label(root, font=("Lucida Sans", 10), text="Kategori :").place(x=277,y=189)
     
     txt_nama = Entry(root,width=15, font=("Lucida Sans", 10))
@@ -502,9 +528,13 @@ def windowUtama():
     cmb_kategori.set("Pilih Kategori")
     cmb_kategori.place(x=90,y=120)
 
+    svid.trace("w", lambda name, index, mode, svid=svid: callbackId(svid))
+    txt_cari_id = Entry(root, width=3, textvariable=svid, font=("Lucida Sans", 10))
+    txt_cari_id.place(x=55,y=192)
+
     sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
-    txt_cari = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
-    txt_cari.place(x=60,y=192)
+    txt_cari_nama = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
+    txt_cari_nama.place(x=150,y=192)
 
     cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
