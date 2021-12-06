@@ -122,6 +122,18 @@ def validasiKategori():
         kategori = lst_kategori[1]
         kategori_value = True
 
+def validasiId():
+    global id_barang, id_value
+
+    id_value = False
+
+    if id_barang == 0 or id_barang == '0':
+        messagebox.showinfo("Error", "Harap pilih barang terlebih dahulu !")
+        id_value = False
+        print(id_barang)
+    else:
+        id_value = True
+
 def validasiSemua():
     global valid
 
@@ -135,19 +147,23 @@ def validasiSemua():
             if harga_value == True:
                 validasiKategori()
                 if kategori_value == True:
-                    valid = True
+                    validasiId()
+                    if id_value == True:
+                        valid = True
 
 
 # Mengelola data
 def tambahData():
-    hari_ini = datetime.datetime.now()
-    
+    global id_barang
+
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     validasiSemua()
     if valid == True:
         try:
+            hari_ini = datetime.datetime.now()
+
             c.execute("INSERT INTO tb_inventory (prefix,nama,qty,harga,kategori,dibuat,status_data) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             (prefix,nama,qty,harga,kategori,hari_ini,'Aktif'))
             conn.commit()
@@ -157,23 +173,22 @@ def tambahData():
             txt_nama.delete(0, END)
             txt_qty.delete(0, END)
             txt_harga.delete(0, END)
+            cmb_kategori.set("Pilih Kategori")
+            cmb_pilih_kategori.set(lst_pilih_kategori[0])
             txt_nama.focus_set()
 
             listBox.destroy()
             showInventory()
+
+            id_barang = 0
+
         except Exception as e:
-            print(e)
+            messagebox.showinfo("error", e)
             conn.rollback()
             conn.close()
 
 def editData():
     global id_barang
-
-    hari_ini = datetime.datetime.now()
-    
-    nama = txt_nama.get()
-    qty = int(txt_qty.get())
-    harga = int(txt_harga.get())
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
@@ -181,6 +196,12 @@ def editData():
     validasiSemua()
     if valid == True:
         try:
+            hari_ini = datetime.datetime.now()
+    
+            nama = txt_nama.get()
+            qty = int(txt_qty.get())
+            harga = int(txt_harga.get())
+
             c.execute("UPDATE tb_inventory SET prefix=%s,nama=%s,qty=%s,harga=%s,kategori=%s,diubah=%s WHERE id=%s",
             (prefix,nama,qty,harga,kategori,hari_ini,id_barang))
             conn.commit()
@@ -191,11 +212,13 @@ def editData():
             txt_qty.delete(0, END)
             txt_harga.delete(0, END)
             cmb_kategori.set("Pilih Kategori")
+            cmb_pilih_kategori.set(lst_pilih_kategori[0])
             txt_nama.focus_set()
-            id_barang = 0
 
             listBox.destroy()
             showInventory()
+
+            id_barang = 0
 
         except Exception as e:
             messagebox.showinfo("information", 'Harap pilih barang untuk diedit terlebih dahulu !')
@@ -205,12 +228,12 @@ def editData():
 def hapusData():
     global id_barang
 
-    hari_ini = datetime.datetime.now()
-
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     try:
+        hari_ini = datetime.datetime.now()
+
         c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
         (hari_ini,"Tidak Aktif", id_barang))
         conn.commit()
@@ -221,37 +244,42 @@ def hapusData():
         txt_qty.delete(0, END)
         txt_harga.delete(0, END)
         cmb_kategori.set("Pilih Kategori")
+        cmb_pilih_kategori.set(lst_pilih_kategori[0])
         txt_nama.focus_set()
-        id_barang = 0
 
         listBox.destroy()
         showInventory()
+
+        id_barang = 0
+
     except Exception as e:
-       messagebox.showinfo("information", e)
-       conn.rollback()
-       conn.close()
+        messagebox.showinfo("information", e)
+        conn.rollback()
+        conn.close()
 
 def restoreData():
     global id_barang
 
-    hari_ini = datetime.datetime.now()
-
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
-    try:
-        c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
-        (hari_ini, "Aktif", id_barang))
-        conn.commit()
+    validasiId()
+    if id_value == True:
+        try:
+            hari_ini = datetime.datetime.now()
 
-        id_barang = 0
+            c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
+            (hari_ini, "Aktif", id_barang))
+            conn.commit()
 
-        messagebox.showinfo("information", "Barang Berhasil Diambil Dari Gudang")
-        showInventory()
-    except Exception as e:
-       messagebox.showinfo("information", e)
-       conn.rollback()
-       conn.close()
+            messagebox.showinfo("information", "Barang Berhasil Diambil Dari Gudang")
+            showRecycleBin()
+
+            id_barang = 0
+        except Exception as e:
+            messagebox.showinfo("information", e)
+            conn.rollback()
+            conn.close()
     
 
 # Mencari data ditabel berdasarkan nama dan atau kategori
@@ -296,6 +324,7 @@ def callbackId(svid):
         showCari()
 
     showCari()
+
 
 # Mengambil nilai dari tabel berdasarkan klick
 def GetValue(event):
@@ -356,8 +385,6 @@ def GetValueRecycleBin(event):
     txt_harga.delete(0, END)
     txt_harga.insert(0, harga)
 
-    print(id_barang, kategori_id)
-
 
 # Menunjukkan tabel dari database berdasarkan kategori
 def kategoriShowBarang(e):
@@ -404,7 +431,6 @@ def showInventory():
 
     c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Aktif",))
     record = c.fetchall()
-    print(record)
     conn.commit()
     
     for i, (id_barang,nama,qty,harga) in enumerate(record, start=1):
@@ -414,7 +440,7 @@ def showInventory():
     listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showCari():
-    global cari, Id
+    global listBox, cari, Id
     Id = txt_cari_id.get()
     cari = txt_cari_nama.get()
 
@@ -450,7 +476,7 @@ def showCari():
     listBox.bind('<ButtonRelease-1>',GetValue)
 
 def showRecycleBin():
-    global listBoxRecycle, scrollTree, frm_recycle
+    global listBoxRecycle, scrollTree, frm_recycle, id_barang
 
     frm_recycle = Frame(top)
     frm_recycle.place(x=20,y=80)
@@ -483,6 +509,8 @@ def showRecycleBin():
 
     listBoxRecycle.bind('<ButtonRelease-1>', GetValueRecycleBin)
     showInventory()
+
+    id_barang = 0
 
 
 # Window GUI program
