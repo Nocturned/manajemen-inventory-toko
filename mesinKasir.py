@@ -186,7 +186,7 @@ def showKatalog():
     for col in cols:
         listBox.heading(col, text=col)
         listBox.column('No', minwidth=0, width=50, stretch=NO, anchor = CENTER)
-        listBox.column('Nama', minwidth=0, width=170, stretch=NO, anchor = W)
+        listBox.column('Nama', minwidth=0, width=190, stretch=NO, anchor = W)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
@@ -237,7 +237,6 @@ def showKatalogKategori():
     listBox.bind('<ButtonRelease-1>',GetValue)
 
 
-
 # Window GUI program
 def windowUtama():
     global root, sv, svqty
@@ -249,7 +248,7 @@ def windowUtama():
     sv = StringVar()
     svqty = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("410x470")
+    root.geometry("430x470")
     root.resizable(False, False)
     root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy()])
 
@@ -260,30 +259,31 @@ def windowUtama():
 
     lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
 
-    lbl_kasir_emoji = Label(root, font=("Lucida Sans", 30), text="🛒").place(x=130,y=12)
-    lbl_kasir = Label(root, font=("Lucida Sans", 30), text="Kasir").place(x=180,y=20)
-    lbl_cari = Label(root, font=("Lucida Sans", 13), text="Cari").place(x=20,y=330)
-    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=60,y=380)
-    lbl_total = Label(root, font=("Lucida Sans", 13), text="Total").place(x=170,y=380)
+    lbl_kasir_emoji = Label(root, font=("Lucida Sans", 30), text="🛒").place(x=140,y=12)
+    lbl_kasir = Label(root, font=("Lucida Sans", 30), text="Kasir").place(x=190,y=20)
+    lbl_cari = Label(root, font=("Lucida Sans", 13), text="Cari: ").place(x=20,y=330)
+    lbl_kategori = Label(root, font=("Lucida Sans", 13), text="Kategori: ").place(x=200,y=330)
+    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=70,y=380)
+    lbl_total = Label(root, font=("Lucida Sans", 13), text="Total").place(x=160,y=380)
 
     cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
-    cmb_pilih_kategori.place(x=250,y=333)
+    cmb_pilih_kategori.place(x=280,y=333)
 
     sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
     txt_cari = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
-    txt_cari.place(x=60,y=333)
+    txt_cari.place(x=65,y=333)
 
     svqty.trace("w", lambda name, index, mode, svqty=svqty: callbackqty(svqty))
     txt_qty = Entry(root, width=6, textvariable=svqty, font=("Lucida Sans", 10))
-    txt_qty.place(x=100,y=383)
+    txt_qty.place(x=110,y=383)
 
     txt_total = Entry(root, width=15, font=("Lucida Sans", 10), state='disabled', disabledbackground='white', disabledforeground='black')
-    txt_total.place(x=220,y=383)
+    txt_total.place(x=230,y=383)
 
 
-    btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=165,y=430)
+    btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=175,y=430)
 
     showKatalog()
     mainloop()
