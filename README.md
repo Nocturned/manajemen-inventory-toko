@@ -9,7 +9,9 @@ Anggota Kelompok 8:
 
 Libraries used:
     1. tkinter
+    
     2. mysql-connector-python
+    
     3. datetime
     
 # Instruksi Pemakaian
