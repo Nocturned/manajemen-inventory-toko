@@ -84,7 +84,7 @@ def callbackqty(svqty):
 
 
 # Mengambil nilai dari lepas klick pada tabel katalog
-def GetValue(event):
+def GetValue(e):
     global id_barang, nama, harga_str
 
     rowID = listBox.selection()[0]
@@ -107,6 +107,42 @@ def GetValue(event):
     txt_total.delete(0, END)
     txt_total.insert('end', '{}'.format(total_str))
     txt_total.configure(state='disabled',disabledbackground='white', disabledforeground='black')
+
+
+# Untuk menggerakkan header (frame) window
+def mouse_down(e):
+    global x, y
+    x, y = e.x, e.y
+
+def mouse_up(e):
+    global x, y
+    x, y = None, None
+
+def mouse_drag(e):
+    global x, y
+    try:
+        deltax = e.x - x
+        deltay = e.y - y
+        x0 = root.winfo_x() + deltax
+        y0 = root.winfo_y() + deltay
+        root.geometry("+%s+%s" % (x0, y0))
+    except:
+        pass
+
+
+# Fungsi header window
+def frm_mapped(e):
+    root.update_idletasks()
+    root.overrideredirect(True)
+    root.state('normal')
+
+def minimize():
+    root.update_idletasks()
+    root.overrideredirect(False)
+    root.state('iconic')
+
+def exit():
+    root.destroy()
 
 
 # Validasi text Qty
@@ -173,7 +209,7 @@ def showKatalog():
     global listBox, scrollTree, frm_tabel
 
     frm_tabel = Frame(root)
-    frm_tabel.place(x=20,y=100)
+    frm_tabel.place(x=20,y=130)
     scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('No', 'Nama','Harga')
@@ -207,7 +243,7 @@ def showKatalogKategori():
     cari = txt_cari.get()
 
     frm_tabel = Frame(root)
-    frm_tabel.place(x=20,y=100)
+    frm_tabel.place(x=20,y=130)
     scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('No', 'Nama','Harga')
@@ -248,9 +284,10 @@ def windowUtama():
     sv = StringVar()
     svqty = StringVar()
     root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("430x470")
+    root.geometry("430x500")
     root.resizable(False, False)
-    root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy()])
+    root.overrideredirect(True)
+
 
     theme = ttk.Style()
     theme.theme_use('clam')
@@ -259,31 +296,53 @@ def windowUtama():
 
     lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
 
-    lbl_kasir_emoji = Label(root, font=("Lucida Sans", 30), text="🛒").place(x=140,y=12)
-    lbl_kasir = Label(root, font=("Lucida Sans", 30), text="Kasir").place(x=190,y=20)
-    lbl_cari = Label(root, font=("Lucida Sans", 13), text="Cari: ").place(x=20,y=330)
-    lbl_kategori = Label(root, font=("Lucida Sans", 13), text="Kategori: ").place(x=200,y=330)
-    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=70,y=380)
-    lbl_total = Label(root, font=("Lucida Sans", 13), text="Total").place(x=160,y=380)
+    # Window header section
+    x, y = None, None
+    frm_header = Frame(root, bg="#009DFF", relief='raised', height=35)
+    frm_header.pack(side=TOP, fill=BOTH)
+    frm_header.bind('<ButtonPress-1>', mouse_down)
+    frm_header.bind('<B1-Motion>', mouse_drag)
+    frm_header.bind('<ButtonRelease-1>', mouse_up)
+    frm_header.bind('<Map>', frm_mapped)
+
+    lbl_header = Label(frm_header, font=("Lucida Sans",13,'bold'), text="Mesin Kasir")
+    lbl_header.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header.pack(side=LEFT, anchor='w')
+
+    btn_close = Button(frm_header, width=3, command=lambda: [exit()])
+    btn_close.configure(font=('Lucida Sans',10,'bold'),text='X',bg='#007DCC', fg='#E60707', activebackground='#E60707', activeforeground='#FFFFFF')
+    btn_close.pack(side=RIGHT,anchor=E)
+
+    btn_min = Button(frm_header, width=3, command=lambda: [minimize()])
+    btn_min.configure(font=('Lucida Sans',10,'bold'),text='—',bg='#007DCC', fg='#FFFFFF', activebackground='#FFFFFF', activeforeground='#007DCC')
+    btn_min.pack(side=RIGHT,anchor=E)
+
+
+    lbl_kasir_emoji = Label(root, font=("Lucida Sans", 30), text="🛒").place(x=140,y=42)
+    lbl_kasir = Label(root, font=("Lucida Sans", 30), text="Kasir").place(x=190,y=50)
+    lbl_cari = Label(root, font=("Lucida Sans", 13), text="Cari: ").place(x=20,y=360)
+    lbl_kategori = Label(root, font=("Lucida Sans", 13), text="Kategori: ").place(x=200,y=360)
+    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=70,y=410)
+    lbl_total = Label(root, font=("Lucida Sans", 13), text="Total").place(x=160,y=410)
 
     cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
-    cmb_pilih_kategori.place(x=280,y=333)
+    cmb_pilih_kategori.place(x=280,y=363)
 
     sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
     txt_cari = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
-    txt_cari.place(x=65,y=333)
+    txt_cari.place(x=65,y=363)
 
     svqty.trace("w", lambda name, index, mode, svqty=svqty: callbackqty(svqty))
     txt_qty = Entry(root, width=6, textvariable=svqty, font=("Lucida Sans", 10))
-    txt_qty.place(x=110,y=383)
+    txt_qty.place(x=110,y=413)
 
     txt_total = Entry(root, width=15, font=("Lucida Sans", 10), state='disabled', disabledbackground='white', disabledforeground='black')
-    txt_total.place(x=230,y=383)
+    txt_total.place(x=230,y=413)
 
 
-    btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=175,y=430)
+    btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=175,y=460)
 
     showKatalog()
     mainloop()
