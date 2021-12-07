@@ -223,7 +223,7 @@ def beliBarang():
             showKatalog()
 
         except Exception as e:
-            messagebox.showinfo("information", 'Stock barang ini sedang habis')
+            messagebox.showinfo("information", 'Stock barang ini tidak mencukupi')
             conn.rollback()
             conn.close()
 
@@ -288,7 +288,7 @@ def showKatalogKategori():
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
-    c.execute("SELECT id,nama,harga FROM tb_inventory WHERE kategori LIKE %s AND nama LIKE %s AND status_data=%s", ("%"+kategori+"%","%"+cari+"%","Aktif"))
+    c.execute("SELECT id,nama,harga FROM tb_inventory WHERE kategori LIKE %s AND nama LIKE %s AND status_data=%s", (kategori+"%",cari+"%","Aktif"))
     record = c.fetchall()
     conn.commit()
     
