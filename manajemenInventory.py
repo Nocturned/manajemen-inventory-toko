@@ -649,8 +649,8 @@ def windowUtama():
     lbl_qty = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Qty").place(x=20,y=80)
     lbl_harga = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Harga").place(x=20,y=110)
     lbl_cari_id = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",10,'bold'), text="ID :").place(x=20,y=210)
-    lbl_cari_nama = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",10,'bold'), text="Nama :").place(x=97,y=210)
-    lbl_pilih_kategori = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",10,'bold'), text="Kategori :").place(x=275,y=209)
+    lbl_cari_nama = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",10,'bold'), text="Nama :").place(x=87,y=210)
+    lbl_pilih_kategori = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",10,'bold'), text="Kategori :").place(x=270,y=209)
     
     txt_nama = Entry(root,width=15, font=("Lucida Sans", 10))
     txt_nama.place(x=90,y=52)
@@ -667,16 +667,16 @@ def windowUtama():
 
     svid.trace("w", lambda name, index, mode, svid=svid: callbackId(svid))
     txt_cari_id = Entry(root, width=3, textvariable=svid, font=("Lucida Sans", 10))
-    txt_cari_id.place(x=55,y=210)
+    txt_cari_id.place(x=48,y=210)
 
     sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
     txt_cari_nama = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
-    txt_cari_nama.place(x=150,y=210)
+    txt_cari_nama.place(x=140,y=210)
 
     cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10,'bold'))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
-    cmb_pilih_kategori.place(x=345,y=210)
+    cmb_pilih_kategori.place(x=340,y=210)
 
     btn_tambah = Button(root, bg='#00aaff', fg='#FFFFFF', text="Tambah", width=15, font=("Lucida Sans",10,'bold'), command=lambda: [tambahData()])
     btn_tambah.place(x=290,y=50)
