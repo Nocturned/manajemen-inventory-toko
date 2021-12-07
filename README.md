@@ -6,6 +6,7 @@ Anggota Kelompok 8:
 
 # Requirements
 - Python 3.x
+
 Libraries used:
     1. tkinter
     2. mysql-connector-python
