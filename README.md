@@ -2,7 +2,7 @@
 Projek ini dibuat sebagai tugas kelompok pada mata kuliah Struktur Data dan Algoritma 3B
 Anggota Kelompok 8:
 - Farrel Ibrahim (11200910000066)
-- Adanih Taqi (11200910000093)\
+- Adanih Taqi (11200910000093)
 
 # Requirements
 - Python 3.x
