@@ -12,7 +12,7 @@ Libraries used:
 2. mysql-connector-python
 3. datetime
     
-# Instruksi Pemakaian
+# Instruction
 Sebelum menjalankan program, pastikan memiliki koneksi ke RDBMS MySQL
 
 Lalu jalankan program bisa pakai yang manajemenInventory.py atau mesinKasir.py
