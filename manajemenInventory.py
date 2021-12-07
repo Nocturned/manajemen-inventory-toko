@@ -327,7 +327,7 @@ def callbackId(svid):
 
 
 # Mengambil nilai dari tabel berdasarkan klick
-def GetValue(event):
+def GetValue(e):
     global id_barang, harga
 
     txt_nama.delete(0, END)
@@ -356,7 +356,7 @@ def GetValue(event):
     txt_harga.delete(0, END)
     txt_harga.insert(0, harga)
 
-def GetValueRecycleBin(event):
+def GetValueRecycleBin(e):
     global id_barang, harga
 
     txt_nama.delete(0, END)
@@ -409,7 +409,7 @@ def showInventory():
     global listBox, scrollTree, frm_tabel
 
     frm_tabel = Frame(root)
-    frm_tabel.place(x=20,y=220)
+    frm_tabel.place(x=20,y=240)
     scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('ID Barang','Nama','Qty','Harga')
@@ -445,7 +445,7 @@ def showCari():
     cari = txt_cari_nama.get()
 
     frm_tabel = Frame(root)
-    frm_tabel.place(x=20,y=220)
+    frm_tabel.place(x=20,y=240)
     scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
     
     cols = ('ID Barang','Nama','Qty','Harga')
@@ -479,7 +479,7 @@ def showRecycleBin():
     global listBoxRecycle, scrollTree, frm_recycle, id_barang
 
     frm_recycle = Frame(top)
-    frm_recycle.place(x=20,y=80)
+    frm_recycle.place(x=20,y=95)
     scrollTree = ttk.Scrollbar(frm_recycle, orient='vertical')
     
     cols = ('ID Barang','Nama','Qty','Harga')
@@ -513,6 +513,57 @@ def showRecycleBin():
     id_barang = 0
 
 
+# Untuk menggerakkan header (frame) window
+def mouse_down(e):
+    global x, y
+    x, y = e.x, e.y
+
+def mouse_up(e):
+    global x, y
+    x, y = None, None
+
+def mouse_drag(e):
+    global x, y
+    try:
+        deltax = e.x - x
+        deltay = e.y - y
+        x0 = root.winfo_x() + deltax
+        y0 = root.winfo_y() + deltay
+        root.geometry("+%s+%s" % (x0, y0))
+
+        x0 = top.winfo_x() + deltax
+        y0 = top.winfo_y() + deltay
+        top.geometry("+%s+%s" % (x0, y0))
+    except:
+        pass
+
+
+# Fungsi header window
+def frm_mappedRoot(e):
+    root.update_idletasks()
+    root.overrideredirect(True)
+    root.state('normal')
+
+def frm_mappedTop(e):
+    top.update_idletasks()
+    top.overrideredirect(True)
+    top.state('normal')
+
+def minimizeRoot():
+    root.update_idletasks()
+    root.overrideredirect(False)
+    root.state('iconic')
+
+def minimizeTop():
+    top.update_idletasks()
+    top.overrideredirect(False)
+    top.state('iconic')
+
+def exit():
+    root.destroy()
+    top.destroy
+
+
 # Window GUI program
 def windowUtama():
     global root, sv, kategori
@@ -523,10 +574,9 @@ def windowUtama():
     root = Tk()
     sv = StringVar()
     svid = StringVar()
-    root.title("Manajemen Inventory Toko BlaBlaBla")
-    root.geometry("500x470")
+    root.geometry("500x490")
     root.resizable(False, False)
-    root.protocol('WM_DELETE_WINDOW', lambda: [root.destroy(), top.destroy()])
+    root.overrideredirect(True)
 
     theme = ttk.Style()
     theme.theme_use('clam')
@@ -536,60 +586,110 @@ def windowUtama():
     lst_kategori = ['Alat Tulis Kantor', 'Elektronik']
     lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
 
-    lbl_nama = Label(root, font=("Lucida Sans", 13), text="Nama").place(x=20,y=30)
-    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=20,y=60)
-    lbl_harga = Label(root, font=("Lucida Sans", 13), text="Harga").place(x=20,y=90)
-    lbl_cari_id = Label(root, font=("Lucida Sans", 10), text="ID :").place(x=20,y=190)
-    lbl_cari_nama = Label(root, font=("Lucida Sans", 10), text="Nama :").place(x=97,y=190)
-    lbl_pilih_kategori = Label(root, font=("Lucida Sans", 10), text="Kategori :").place(x=277,y=189)
+
+    # Window header section
+    x, y = None, None
+    frm_header = Frame(root, bg="#009DFF", relief='raised', height=35)
+    frm_header.pack(side=TOP, fill=BOTH)
+    frm_header.bind('<ButtonPress-1>', mouse_down)
+    frm_header.bind('<B1-Motion>', mouse_drag)
+    frm_header.bind('<ButtonRelease-1>', mouse_up)
+    frm_header.bind('<Map>', frm_mappedRoot)
+
+    lbl_header_emoji = Label(frm_header, font=("Lucida Sans",16,'bold'), text="📋")
+    lbl_header_emoji.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header_emoji.pack(side=LEFT, anchor=NW)
+
+    lbl_header = Label(frm_header, font=("Lucida Sans",13,'bold'), text="Inventory")
+    lbl_header.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header.pack(side=LEFT, anchor=SW)
+
+    btn_close = Button(frm_header, width=3, height=1, command=lambda: [exit()])
+    btn_close.configure(font=('Lucida Sans',10,'bold'),text='X',bg='#007DCC', fg='#E60707', activebackground='#E60707', activeforeground='#FFFFFF')
+    btn_close.pack(side=RIGHT, anchor=NE, fill=None, expand=False)
+
+    btn_min = Button(frm_header, width=3, height=1, command=lambda: [minimizeRoot()])
+    btn_min.configure(font=('Lucida Sans',10,'bold'),text='—',bg='#007DCC', fg='#FFFFFF', activebackground='#FFFFFF', activeforeground='#007DCC')
+    btn_min.pack(side=RIGHT, anchor=NE, fill=None, expand=False)
+
+
+    lbl_nama = Label(root, font=("Lucida Sans", 13), text="Nama").place(x=20,y=50)
+    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=20,y=80)
+    lbl_harga = Label(root, font=("Lucida Sans", 13), text="Harga").place(x=20,y=110)
+    lbl_cari_id = Label(root, font=("Lucida Sans", 10), text="ID :").place(x=20,y=210)
+    lbl_cari_nama = Label(root, font=("Lucida Sans", 10), text="Nama :").place(x=97,y=210)
+    lbl_pilih_kategori = Label(root, font=("Lucida Sans", 10), text="Kategori :").place(x=277,y=209)
     
     txt_nama = Entry(root,width=15, font=("Lucida Sans", 10))
-    txt_nama.place(x=90,y=32)
+    txt_nama.place(x=90,y=52)
 
     txt_qty = Entry(root, width=15, font=("Lucida Sans", 10))
-    txt_qty.place(x=90,y=62)
+    txt_qty.place(x=90,y=82)
 
     txt_harga = Entry(root,width=15, font=("Lucida Sans", 10))
-    txt_harga.place(x=90,y=92)
+    txt_harga.place(x=90,y=112)
 
     cmb_kategori = ttk.Combobox(root, state="readonly", font=("Lucida Sans",10), value=lst_kategori, width=14)
     cmb_kategori.set("Pilih Kategori")
-    cmb_kategori.place(x=90,y=120)
+    cmb_kategori.place(x=90,y=140)
 
     svid.trace("w", lambda name, index, mode, svid=svid: callbackId(svid))
     txt_cari_id = Entry(root, width=3, textvariable=svid, font=("Lucida Sans", 10))
-    txt_cari_id.place(x=55,y=192)
+    txt_cari_id.place(x=55,y=212)
 
     sv.trace("w", lambda name, index, mode, sv=sv: callback(sv))
     txt_cari_nama = Entry(root, width=15, textvariable=sv, font=("Lucida Sans", 10))
-    txt_cari_nama.place(x=150,y=192)
+    txt_cari_nama.place(x=150,y=212)
 
     cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
-    cmb_pilih_kategori.place(x=343,y=190)
+    cmb_pilih_kategori.place(x=343,y=210)
 
-    btn_tambah = Button(root, text="Tambah", width=15, font=("Lucida Sans",10), command=lambda: [tambahData()]).place(x=290,y=30)
-    btn_edit = Button(root, text="Edit", width=15, font=("Lucida Sans",10), command=lambda: [editData()]).place(x=290,y=60)
-    btn_hapus = Button(root, text="Hapus", width=15, font=("Lucida Sans",10), command=lambda: [hapusData()]).place(x=290,y=90)
-    btn_recycle_bin = Button(root, text="🗑️Recycle Bin", font=("Lucida Sans",10), width=15, command=lambda: [windowRecycleBin(), root.withdraw()]).place(x=290,y=120)
+    btn_tambah = Button(root, text="Tambah", width=15, font=("Lucida Sans",10), command=lambda: [tambahData()]).place(x=290,y=50)
+    btn_edit = Button(root, text="Edit", width=15, font=("Lucida Sans",10), command=lambda: [editData()]).place(x=290,y=80)
+    btn_hapus = Button(root, text="Hapus", width=15, font=("Lucida Sans",10), command=lambda: [hapusData()]).place(x=290,y=110)
+    btn_recycle_bin = Button(root, text="🗑️Recycle Bin", font=("Lucida Sans",10), width=15, command=lambda: [root.withdraw(), windowRecycleBin()]).place(x=290,y=140)
 
     showInventory()
     mainloop()
 
 def windowRecycleBin():
     global top
-    global btn_restore
+    global btn_restore, btn_kembali
 
     top = Toplevel()
     top.title("Recycle Bin")
     top.geometry("500x340")
     top.resizable(False, False)
-    top.protocol('WM_DELETE_WINDOW', lambda: [root.deiconify(), top.withdraw()])
+    top.overrideredirect(True)
 
-    lbl_nama = Label(top, font=("Lucida Sans", 16), text="Pilih data untuk direstore").place(x=20,y=10)
+    x, y = None, None
+    frm_header = Frame(top, bg="#009DFF", relief='raised', height=35)
+    frm_header.pack(side=TOP, fill=BOTH)
+    frm_header.bind('<ButtonPress-1>', mouse_down)
+    frm_header.bind('<B1-Motion>', mouse_drag)
+    frm_header.bind('<ButtonRelease-1>', mouse_up)
+    frm_header.bind('<Map>', frm_mappedTop)
 
-    btn_restore = Button(top, text="Restore",font=("Lucida Sans",10), command=lambda: [restoreData(), listBoxRecycle.destroy(), showRecycleBin()]).place(x=20,y=45)
+    lbl_header_emoji = Label(frm_header, font=("Lucida Sans",16,'bold'), text="🗑️")
+    lbl_header_emoji.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header_emoji.pack(side=LEFT, anchor=NW)
+
+    lbl_header = Label(frm_header, font=("Lucida Sans",13,'bold'), text="Recycle Bin")
+    lbl_header.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header.place(x=30,y=2)
+
+    btn_close = Button(frm_header, width=3, command=lambda: [exit()])
+    btn_close.configure(font=('Lucida Sans',10,'bold'),text='X',bg='#007DCC', fg='#E60707', activebackground='#E60707', activeforeground='#FFFFFF')
+    btn_close.pack(side=RIGHT,anchor=NE)
+
+    btn_min = Button(frm_header, width=3, command=lambda: [minimizeTop()])
+    btn_min.configure(font=('Lucida Sans',10,'bold'),text='—',bg='#007DCC', fg='#FFFFFF', activebackground='#FFFFFF', activeforeground='#007DCC')
+    btn_min.pack(side=RIGHT,anchor=NE)
+
+    btn_kembali = Button(top, text="Kembali",font=("Lucida Sans",10), command=lambda: [top.withdraw(), root.deiconify()]).place(x=20,y=50)
+    btn_restore = Button(top, text="Pulihkan",font=("Lucida Sans",10), command=lambda: [restoreData(), listBoxRecycle.destroy(), showRecycleBin()]).place(x=90,y=50)
 
     showRecycleBin()
 
