@@ -8,11 +8,9 @@ Anggota Kelompok 8:
 - Python 3.x
 
 Libraries used:
-    1. tkinter
-    
-    2. mysql-connector-python
-    
-    3. datetime
+1. tkinter.
+2. mysql-connector-python.
+3. datetime.
     
 # Instruksi Pemakaian
 Sebelum menjalankan program, pastikan memiliki koneksi ke RDBMS MySQL
