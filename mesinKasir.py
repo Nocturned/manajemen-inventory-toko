@@ -1,14 +1,38 @@
 from tkinter import *
 from tkinter import ttk, messagebox
-from tkcalendar import *
 import mysql.connector as mariadb
 import datetime
 
 
-# Membuat table riwayat pembelian jika belum ada
+# Membuat database dan table jika belum ada
+def createDatabase():
+    conn = mariadb.connect(user="root", password="", host="localhost", port='3306')
+    c = conn.cursor()
+
+    c.execute("CREATE DATABASE IF NOT EXISTS db_inventoryToko")
+    conn.commit()
+
+    conn.close()
+
 def createTable():
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
+
+    c.execute("""CREATE TABLE IF NOT EXISTS tb_inventory (
+        prefix VARCHAR(4) NOT NULL DEFAULT 'ITM-',
+        id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+        nama VARCHAR(255) NOT NULL,
+        qty INT(4) UNSIGNED,
+        harga INT(9) UNSIGNED,
+        kategori VARCHAR(255) NOT NULL,
+        dibuat datetime null,
+        diubah datetime null,
+        status_data VARCHAR(255) null,
+        PRIMARY KEY (id),
+        UNIQUE KEY (prefix, id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
+        """)
+    conn.commit()
 
     c.execute("""CREATE TABLE IF NOT EXISTS tb_riwayat_pembelian (
         id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -154,19 +178,19 @@ def validasiQty():
     if qty_temp == '':
         qty = ''
         qty_value = False
-        messagebox.showinfo("Error", "Harap masukkan jumlah barang dibeli !")
+        messagebox.showerror("Error", "Harap masukkan jumlah barang dibeli !")
     elif qty_temp.isdigit() == False:
         qty = ''
         qty_value = False
-        messagebox.showinfo("Error", "Format qty belum benar !")
+        messagebox.showerror("Error", "Format qty belum benar !")
     elif int(qty_temp) < 0:
         qty = ''
         qty_value = False
-        messagebox.showinfo("Error", "Jumlah barang tidak boleh kurang dari 0 !")
+        messagebox.showerror("Error", "Jumlah barang tidak boleh kurang dari 0 !")
     elif int(qty_temp) > 100:
         qty = ''
         qty_value = False
-        messagebox.showinfo("Error", "Jumlah maksimal barang adalah 100 !")
+        messagebox.showerror("Error", "Jumlah maksimal barang adalah 100 !")
     elif qty_temp.isdigit() == True:
         qty = int(qty_temp)
         qty_value = True
@@ -208,9 +232,10 @@ def beliBarang():
 def showKatalog():
     global listBox, scrollTree, frm_tabel
 
-    frm_tabel = Frame(root)
+    frm_tabel = Frame(root, bg='#75B4E7')
     frm_tabel.place(x=20,y=130)
-    scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
+
+    scrollTree = ttk.Scrollbar(frm_tabel, style='TScrollbar', orient='vertical')
     
     cols = ('No', 'Nama','Harga')
     listBox = ttk.Treeview(frm_tabel, style="listBox.Treeview", columns=cols, show='headings', yscrollcommand=scrollTree.set)
@@ -242,9 +267,10 @@ def showKatalogKategori():
     global cari
     cari = txt_cari.get()
 
-    frm_tabel = Frame(root)
+    frm_tabel = Frame(root, bg='#75B4E7')
     frm_tabel.place(x=20,y=130)
-    scrollTree = ttk.Scrollbar(frm_tabel, orient='vertical')
+
+    scrollTree = ttk.Scrollbar(frm_tabel, style='TScrollbar', orient='vertical')
     
     cols = ('No', 'Nama','Harga')
     listBox = ttk.Treeview(frm_tabel, style="listBox.Treeview", columns=cols, show='headings', yscrollcommand=scrollTree.set)
@@ -280,6 +306,8 @@ def windowUtama():
     global btn_beli
     global lst_pilih_kategori
 
+    lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
+
     root = Tk()
     sv = StringVar()
     svqty = StringVar()
@@ -287,14 +315,26 @@ def windowUtama():
     root.geometry("430x500")
     root.resizable(False, False)
     root.overrideredirect(True)
+    root.configure(bg='#75B4E7')
 
 
+    # Mengatur tema dan style
     theme = ttk.Style()
     theme.theme_use('clam')
     theme.configure("listBox.Treeview.Heading", font=('Lucida Sans', 10, 'bold'), foreground="#FFFFFF", background="#009DFF", borderwidth=0)
     theme.configure("listBox.Treeview", fieldbackground="#D0D0D0")
 
-    lst_pilih_kategori = ['Semua', 'Alat Tulis Kantor', 'Elektronik']
+    theme.configure("TCombobox", arrowcolor='#FFFFFF')
+    theme.map("TCombobox", background=[('readonly','#00aaff')], foreground=[('readonly','#FFFFFF')])
+    theme.map("TCombobox", bordercolor=[('readonly','#007DBB')], darkcolor=[('readonly','#0096E1')], lightcolor=[('readonly','#0096E1')])
+    theme.map("TCombobox", fieldbackground=[('readonly','#00aaff')])
+    theme.map("TCombobox", selectbackground=[('readonly','#00aaff')], selectforeground=[('readonly','#FFFFFF')])
+    root.option_add("*TCombobox*Listbox*Background", "#FFFFFF")
+    root.option_add("*TCombobox*Listbox*Foreground", "#009DFF")
+
+    theme.configure("TScrollbar", troughcolor='#008BD0', background='#00aaff', bordercolor='#007DBB', darkcolor='#0096E1', lightcolor='#0096E1', arrowcolor='#FFFFFF')
+    theme.map("TScrollbar", background=[('active','#00aaff'), ('disabled','#00aaff')])
+
 
     # Window header section
     x, y = None, None
@@ -305,27 +345,32 @@ def windowUtama():
     frm_header.bind('<ButtonRelease-1>', mouse_up)
     frm_header.bind('<Map>', frm_mapped)
 
+    lbl_header_emoji = Label(frm_header, font=("Lucida Sans",16), text="🛒")
+    lbl_header_emoji.configure(bg='#009DFF', fg='#FFFFFF')
+    lbl_header_emoji.pack(side=LEFT, anchor=NW)
+
     lbl_header = Label(frm_header, font=("Lucida Sans",13,'bold'), text="Mesin Kasir")
     lbl_header.configure(bg='#009DFF', fg='#FFFFFF')
-    lbl_header.pack(side=LEFT, anchor='w')
+    lbl_header.pack(side=LEFT, anchor=SW)
 
     btn_close = Button(frm_header, width=3, command=lambda: [exit()])
     btn_close.configure(font=('Lucida Sans',10,'bold'),text='X',bg='#007DCC', fg='#E60707', activebackground='#E60707', activeforeground='#FFFFFF')
-    btn_close.pack(side=RIGHT,anchor=E)
+    btn_close.pack(side=RIGHT,anchor=NE)
 
     btn_min = Button(frm_header, width=3, command=lambda: [minimize()])
     btn_min.configure(font=('Lucida Sans',10,'bold'),text='—',bg='#007DCC', fg='#FFFFFF', activebackground='#FFFFFF', activeforeground='#007DCC')
-    btn_min.pack(side=RIGHT,anchor=E)
+    btn_min.pack(side=RIGHT,anchor=NE)
 
 
-    lbl_kasir_emoji = Label(root, font=("Lucida Sans", 30), text="🛒").place(x=140,y=42)
-    lbl_kasir = Label(root, font=("Lucida Sans", 30), text="Kasir").place(x=190,y=50)
-    lbl_cari = Label(root, font=("Lucida Sans", 13), text="Cari: ").place(x=20,y=360)
-    lbl_kategori = Label(root, font=("Lucida Sans", 13), text="Kategori: ").place(x=200,y=360)
-    lbl_qty = Label(root, font=("Lucida Sans", 13), text="Qty").place(x=70,y=410)
-    lbl_total = Label(root, font=("Lucida Sans", 13), text="Total").place(x=160,y=410)
+    # Window body section
+    lbl_kasir_emoji = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",30), text="🛒").place(x=140,y=42)
+    lbl_kasir = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",30,'bold'), text="Kasir").place(x=190,y=50)
+    lbl_cari = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Cari: ").place(x=20,y=360)
+    lbl_kategori = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Kategori: ").place(x=195,y=360)
+    lbl_qty = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Qty").place(x=70,y=410)
+    lbl_total = Label(root, bg='#75B4E7', fg='#FFFFFF', font=("Lucida Sans",13,'bold'), text="Total").place(x=175,y=410)
 
-    cmb_pilih_kategori = ttk.Combobox(root, state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10))
+    cmb_pilih_kategori = ttk.Combobox(root, style='TCombobox', state="readonly", value=lst_pilih_kategori, width=13, font=("Lucida Sans",10,'bold'))
     cmb_pilih_kategori.bind("<<ComboboxSelected>>", kategoriShowBarang)
     cmb_pilih_kategori.set(lst_pilih_kategori[0])
     cmb_pilih_kategori.place(x=280,y=363)
@@ -341,12 +386,12 @@ def windowUtama():
     txt_total = Entry(root, width=15, font=("Lucida Sans", 10), state='disabled', disabledbackground='white', disabledforeground='black')
     txt_total.place(x=230,y=413)
 
-
-    btn_beli = Button(root, text="Beli", font=("Lucida Sans",10), width=10, command=lambda: [beliBarang()]).place(x=175,y=460)
+    btn_beli = Button(root, bg='#00aaff', fg='#FFFFFF', text="Beli", font=("Lucida Sans",10,'bold'), width=10, command=lambda: [beliBarang()]).place(x=175,y=460)
 
     showKatalog()
     mainloop()
 
 
+createDatabase()
 createTable()
 windowUtama()
