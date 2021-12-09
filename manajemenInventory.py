@@ -25,25 +25,26 @@ def createTable():
         qty INT(4) UNSIGNED,
         harga INT(9) UNSIGNED,
         kategori VARCHAR(255) NOT NULL,
-        dibuat datetime null,
-        diubah datetime null,
-        status_data VARCHAR(255) null,
+        dibuat DATETIME NULL,
+        diubah DATETIME NULL,
+        status_data VARCHAR(255) NULL,
         PRIMARY KEY (id),
-        UNIQUE KEY (prefix, id)
+        UNIQUE KEY (prefix, id),
+        INDEX (nama, kategori)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
         """)
     conn.commit()
 
     c.execute("""CREATE TABLE IF NOT EXISTS tb_riwayat_pembelian (
-        id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+        id INT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
         barang VARCHAR(255) NOT NULL,
         qty INT(4) UNSIGNED,
         total INT(9) UNSIGNED,
-        dibuat datetime null,
-        diubah datetime null,
-        status_data VARCHAR(255) null,
+        dibuat DATETIME NULL,
+        diubah DATETIME NULL,
+        status_data VARCHAR(255) NULL,
         PRIMARY KEY (id),
-        UNIQUE KEY (id)
+        INDEX (barang, total)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
         """)
     conn.commit()
@@ -160,8 +161,6 @@ def validasiSemua():
             if harga_value == True:
                 validasiKategori()
                 if kategori_value == True:
-                    validasiId()
-                    if id_value == True:
                         valid = True
 
 
@@ -206,8 +205,8 @@ def editData():
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
-    validasiSemua()
-    if valid == True:
+    validasiId()
+    if id_value == True:
         try:
             hari_ini = datetime.datetime.now()
     
@@ -244,31 +243,33 @@ def hapusData():
     conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
-    try:
-        hari_ini = datetime.datetime.now()
+    validasiId()
+    if id_value == True:
+        try:
+            hari_ini = datetime.datetime.now()
 
-        c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
-        (hari_ini,"Tidak Aktif", id_barang))
-        conn.commit()
+            c.execute("UPDATE tb_inventory SET diubah=%s, status_data=%s WHERE id=%s",
+            (hari_ini,"Tidak Aktif", id_barang))
+            conn.commit()
 
-        messagebox.showinfo("information", "Barang berhasil dihapus !")
+            messagebox.showinfo("information", "Barang berhasil dihapus !")
 
-        txt_nama.delete(0, END)
-        txt_qty.delete(0, END)
-        txt_harga.delete(0, END)
-        cmb_kategori.set("Pilih Kategori")
-        cmb_pilih_kategori.set(lst_pilih_kategori[0])
-        txt_nama.focus_set()
+            txt_nama.delete(0, END)
+            txt_qty.delete(0, END)
+            txt_harga.delete(0, END)
+            cmb_kategori.set("Pilih Kategori")
+            cmb_pilih_kategori.set(lst_pilih_kategori[0])
+            txt_nama.focus_set()
 
-        listBox.destroy()
-        showInventory()
+            listBox.destroy()
+            showInventory()
 
-        id_barang = 0
+            id_barang = 0
 
-    except Exception as e:
-        messagebox.showinfo("information", e)
-        conn.rollback()
-        conn.close()
+        except Exception as e:
+            messagebox.showinfo("information", e)
+            conn.rollback()
+            conn.close()
 
 def restoreData():
     global id_barang
