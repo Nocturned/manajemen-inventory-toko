@@ -19,4 +19,4 @@ Lalu jalankan program bisa pakai yang manajemenInventory.py atau mesinKasir.py
 
 manajemenInventory.py dipakai untuk memasukkan, mengedit, atau menghapus data dalam database
 
-mesinKasir.py dipakai untuk mengurangi 'qty' pada table tb_inventory
+mesinKasir.py dipakai untuk mengurangi 'qty' pada table tb_inventory dan menambah log pembelian pada tabel tb_riwayat_pembelian
