@@ -25,25 +25,26 @@ def createTable():
         qty INT(4) UNSIGNED,
         harga INT(9) UNSIGNED,
         kategori VARCHAR(255) NOT NULL,
-        dibuat datetime null,
-        diubah datetime null,
-        status_data VARCHAR(255) null,
+        dibuat DATETIME NULL,
+        diubah DATETIME NULL,
+        status_data VARCHAR(255) NULL,
         PRIMARY KEY (id),
-        UNIQUE KEY (prefix, id)
+        UNIQUE KEY (prefix, id),
+        INDEX (nama, kategori)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
         """)
     conn.commit()
 
     c.execute("""CREATE TABLE IF NOT EXISTS tb_riwayat_pembelian (
-        id int(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+        id INT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
         barang VARCHAR(255) NOT NULL,
         qty INT(4) UNSIGNED,
         total INT(9) UNSIGNED,
-        dibuat datetime null,
-        diubah datetime null,
-        status_data VARCHAR(255) null,
+        dibuat DATETIME NULL,
+        diubah DATETIME NULL,
+        status_data VARCHAR(255) NULL,
         PRIMARY KEY (id),
-        UNIQUE KEY (id)
+        INDEX (barang, total)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1
         """)
     conn.commit()
@@ -86,8 +87,8 @@ def callback(sv):
         kategori = lst_pilih_kategori[2]
         showKatalogKategori()
 
-    cari = txt_cari.get()
     showKatalogKategori()
+    cari = txt_cari.get()
 
 
 # Mengisi harga total berdasarkan Qty
