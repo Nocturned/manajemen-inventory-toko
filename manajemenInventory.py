@@ -1,12 +1,12 @@
 from tkinter import *
 from tkinter import ttk, messagebox
-import mysql.connector as mariadb
+import mysql.connector as mysql
 import datetime
 
 
 # Membuat database dan table jika belum ada
 def createDatabase():
-    conn = mariadb.connect(user="root", password="", host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("CREATE DATABASE IF NOT EXISTS db_inventoryToko")
@@ -15,7 +15,7 @@ def createDatabase():
     conn.close()
 
 def createTable():
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("""CREATE TABLE IF NOT EXISTS tb_inventory (
@@ -168,7 +168,7 @@ def validasiSemua():
 def tambahData():
     global id_barang
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     validasiSemua()
@@ -202,7 +202,7 @@ def tambahData():
 def editData():
     global id_barang
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     validasiId()
@@ -240,7 +240,7 @@ def editData():
 def hapusData():
     global id_barang
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     validasiId()
@@ -274,7 +274,7 @@ def hapusData():
 def restoreData():
     global id_barang
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
     
     validasiId()
@@ -294,7 +294,7 @@ def restoreData():
             messagebox.showinfo("information", e)
             conn.rollback()
             conn.close()
-    
+
 
 # Mencari data ditabel berdasarkan nama dan atau kategori
 def callback(sv):
@@ -492,7 +492,7 @@ def showInventory():
         listBox.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Aktif",))
@@ -529,7 +529,7 @@ def showCari():
         listBox.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE id LIKE %s AND kategori LIKE %s AND nama LIKE %s AND status_data=%s", ("%"+Id+"%","%"+kategori+"%","%"+cari+"%","Aktif"))
@@ -564,7 +564,7 @@ def showRecycleBin():
         listBoxRecycle.column('Qty', minwidth=0, width=60, stretch=NO, anchor = CENTER)
         listBoxRecycle.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("SELECT CONCAT(prefix,id)AS id_barang,nama,qty,harga FROM tb_inventory WHERE status_data=%s",("Tidak Aktif",))
@@ -579,7 +579,6 @@ def showRecycleBin():
     showInventory()
 
     id_barang = 0
-
 
 
 # Window GUI program
