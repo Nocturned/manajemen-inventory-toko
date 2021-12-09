@@ -1,12 +1,12 @@
 from tkinter import *
 from tkinter import ttk, messagebox
-import mysql.connector as mariadb
+import mysql.connector as mysql
 import datetime
 
 
 # Membuat database dan table jika belum ada
 def createDatabase():
-    conn = mariadb.connect(user="root", password="", host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("CREATE DATABASE IF NOT EXISTS db_inventoryToko")
@@ -15,7 +15,7 @@ def createDatabase():
     conn.close()
 
 def createTable():
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("""CREATE TABLE IF NOT EXISTS tb_inventory (
@@ -87,8 +87,9 @@ def callback(sv):
         kategori = lst_pilih_kategori[2]
         showKatalogKategori()
 
-    showKatalogKategori()
     cari = txt_cari.get()
+    showKatalogKategori()
+    
 
 
 # Mengisi harga total berdasarkan Qty
@@ -201,7 +202,7 @@ def validasiQty():
 def beliBarang():
     hari_ini = datetime.datetime.now()
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     validasiQty()
@@ -251,7 +252,7 @@ def showKatalog():
         listBox.column('Nama', minwidth=0, width=190, stretch=NO, anchor = W)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("SELECT id,nama,harga FROM tb_inventory WHERE status_data=%s",("Aktif",))
@@ -286,7 +287,7 @@ def showKatalogKategori():
         listBox.column('Nama', minwidth=0, width=170, stretch=NO, anchor = W)
         listBox.column('Harga', minwidth=0, width=130, stretch=NO, anchor = W)
 
-    conn = mariadb.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
+    conn = mysql.connect(user="root", password="", database='db_inventoryToko', host="localhost", port='3306')
     c = conn.cursor()
 
     c.execute("SELECT id,nama,harga FROM tb_inventory WHERE kategori LIKE %s AND nama LIKE %s AND status_data=%s", (kategori+"%",cari+"%","Aktif"))
