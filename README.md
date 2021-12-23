@@ -6,7 +6,8 @@ Anggota Kelompok 8:
 
 # Requirements
 - Python 3.x
-Package yang dipakai:
+
+Package yang dipakai:   
 1. tkinter
 2. mysql-connector-python
 3. datetime
