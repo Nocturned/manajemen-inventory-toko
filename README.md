@@ -6,17 +6,24 @@ Anggota Kelompok 8:
 
 # Requirements
 - Python 3.x
-
-Libraries used:
+Package yang dipakai:
 1. tkinter
 2. mysql-connector-python
 3. datetime
+4. pillow
+5. hashlib
+6. fpdf2
     
-# Instruction
-Sebelum menjalankan program, pastikan memiliki koneksi ke RDBMS MySQL
+# How to Run
+1. Jalankan XAMPP
 
-Lalu jalankan program bisa pakai yang manajemenInventory.py atau mesinKasir.py
+2. Install requirement dengan cara membuka file "pip install.bat"
 
-manajemenInventory.py dipakai untuk memasukkan, mengedit, atau menghapus data dalam database
+3. Run file inputUserDatabase.py (melalui IDE python pilihan)
+   - (optional) Jika malas input data bisa import/run syntax dri file "Input Data.sql"
 
-mesinKasir.py dipakai untuk mengurangi 'qty' pada table tb_inventory dan menambah log pembelian pada tabel tb_riwayat_pembelian
+4. Buka aplikasi melalui Login.py (melalui IDE python pilihan)
+
+Hak akses:
+1. Admin (Membuka manajemen inventory) == 123123
+2. Kasir (Bisa membuka kasir) == 123321
