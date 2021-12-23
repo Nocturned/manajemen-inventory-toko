@@ -20,7 +20,8 @@ Package yang dipakai:
 2. Install requirement dengan cara membuka file "pip install.bat"
 
 3. Run file inputUserDatabase.py (melalui IDE python pilihan)
-   - (optional) Jika malas input data bisa import/run syntax dri file "Input Data.sql"
+   - (optional) Jika malas input data bisa jalankan file inputDataInventory.py   
+            note: tabel akan dikosongkan terlebih dahulu sebelum menginput
 
 4. Buka aplikasi melalui Login.py (melalui IDE python pilihan)
 
